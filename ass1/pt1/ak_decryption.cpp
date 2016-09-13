@@ -34,7 +34,7 @@ string vector_to_string(vector<char> vec) {
 string str_vector_to_string(vector<string> vec) {
   string str;
   for (size_t i = 0; i < vec.size(); i++) {
-    str = str + vec.at(i);
+    str = str + " " + vec.at(i);
   }
   return str;
 }
@@ -80,10 +80,10 @@ vector<char> read_to_vector_ns(string filename) {
   return remove_spaces(read_to_vector(filename));
 }
 
+
 // decrypt_with_key decrypts partial message in scope with given key
 vector<char> decrypt_with_key(vector<char> vek, int scope, vector<char> key) {
 
-  // TODO: go through vector and decipher mesasge with keystr
   // save decrypted message in vector
   vector<char> decText;
   for (size_t i = 0; i < key.size(); i++) {
@@ -101,10 +101,33 @@ vector<char> decrypt_with_key(vector<char> vek, int scope, vector<char> key) {
   return decText;
 }
 
-long log_prob(vector<char> plainvec, int keyl, int part, vector<char> v) {
-  // TODO: count the log. probability based on quadgram statistics
-  // compare only the length of scrambeled child_key part "XYZAAA"
-  vector<string> relevant_chunks;
+
+vector<string> split_to_ngrams(vector<char> vec, int n) {
+  vector<string> ngrams;
+  vector<char> part;
+  int pass_count = 0;
+
+  for (size_t i = 0; i < vec.size(); i++) {
+    if (i%n == 0 && i != 0) {
+      ngrams.push_back(vector_to_string(part));
+      part.clear();
+    }
+    int idx = i+pass_count;
+    if (!(idx >= vec.size())) {
+      part.push_back(vec.at(idx));
+    }
+    if ((i+1) == vec.size() && pass_count < n-1) {
+      i = -1;
+      pass_count++;
+      part.clear();
+    }
+  }
+
+  return ngrams;
+}
+
+vector<char> prepare_relevant_chunks(vector<char> plainvec, int keyl, int part, vector<char> v) {
+  vector<char> relevant_chunks;
   vector<char> kschunk;
   vector<char> pschunk;
 
@@ -113,23 +136,35 @@ long log_prob(vector<char> plainvec, int keyl, int part, vector<char> v) {
       for (size_t j = 0; j < part; j++) {
         pschunk.push_back(kschunk.at(j));
       }
-      relevant_chunks.push_back(vector_to_string(pschunk));
+      for (auto & e : pschunk) {
+        relevant_chunks.push_back(e);
+      }
       pschunk.clear();
       kschunk.clear();
     }
     kschunk.push_back(plainvec.at(i));
   }
 
-
-
-  if (v.size() == 2 && v.at(0) == 'A' && v.at(1) == 'A') {
-    const string output("./output/"+ vector_to_string(v));
-    str_to_file(str_vector_to_string(relevant_chunks),output);
-  }
-  return 1;
+  return relevant_chunks;
 }
 
-void decryption_sequence(vector<char> cipvec, int scope) {
+long quad_stat(vector<string> data, string sample) {
+  // TODO: quadram statistics here
+
+  return 5;
+}
+
+long log_prob(vector<char> plainvec, int keyl, int part, vector<char> v,string sample) {
+
+  vector<char> relevant_chunks = prepare_relevant_chunks(plainvec,keyl,part,v);
+  vector<string> data = split_to_ngrams(relevant_chunks,4);
+  long prop = quad_stat(data,sample);
+
+  return prop;
+}
+
+
+map<vector<char>,long> decryption_sequence(vector<char> cipvec,string sample, int scope,string output) {
   vector<char> plainvector;
   long maxscore = 0;
   long score = 0;
@@ -155,9 +190,9 @@ void decryption_sequence(vector<char> cipvec, int scope) {
 
         plainvector = decrypt_with_key(cipvec, scope, child_key);
         if (pass_count > 1) {
-          score = log_prob(plainvector,i,i,child_key);
+          score = log_prob(plainvector,i,i,child_key,sample);
         } else {
-          score = log_prob(plainvector, i,j,child_key);
+          score = log_prob(plainvector, i,j,child_key,sample);
         }
 
         if (score > maxscore) {
@@ -180,37 +215,35 @@ void decryption_sequence(vector<char> cipvec, int scope) {
         }
       }
     }
-    // TODO: extra iterate
     // saved this key value to public var
     parent_score[parent_key] = maxscore;
 
     maxscore = 0;
   }
-
+  string str;
   for (auto& x: parent_score) {
-    string str = vector_to_string(x.first);
-    std::cout << str << ": " << x.second << '\n';
+    string st = vector_to_string(x.first);
+    str+=st + ": " + to_string(x.second) + "\n";
   }
+  str_to_file(str,output);
+  return parent_score;
 }
-
-
 
 int main() {
   const int workspace = 415;
   const string ctfile("ciphertext");
   const string output("./output/plaintext.frag");
+  const string sample("./ngrams/quadgrams");
   // clear folder
   system("exec rm output/*.frag");
 
   vector<char> ciphervector = read_to_vector_ns(ctfile);
-  // TODO: make decryption sequence function based on quadgram statistics
+  // vector<char> plaintvector = decrypt_with_key(ciphervector,workspace, {'D','A','T','F','B','A'});
+  //string fragments = vector_to_string(plaintvector);
+  //str_to_file(fragments,output);
 
-  vector<char> plaintvector = decrypt_with_key(ciphervector,workspace, {'A','A'});
+  map<vector<char>, long> result = decryption_sequence(ciphervector,sample,workspace,output);
 
-  string fragments = vector_to_string(plaintvector);
-  str_to_file(fragments,output);
-
-  decryption_sequence(ciphervector, workspace);
 
   return 0;
 }
