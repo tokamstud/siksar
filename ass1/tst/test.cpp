@@ -1,15 +1,25 @@
+// clearing vectors
 #include <iostream>
 #include <vector>
-using namespace std;
 
-// main() is where program execution begins.
-
-int main()
+int main ()
 {
-  int myints[] = {10,20,30,5,15};
-  vector<int> v(myints,myints+5);
+  std::vector<char> myvector;
+  myvector.push_back('1');
+  myvector.push_back('2');
+  myvector.push_back('3');
 
-  cout << myints << endl;
-  cout << myints+5 << endl;
+  std::cout << "myvector contains:";
+  for (unsigned i=0; i<myvector.size(); i++)
+    std::cout << ' ' << myvector[i];
+  std::cout << '\n';
+
+  myvector.clear();
+
+  std::cout << "myvector contains:";
+  for (unsigned i=0; i<myvector.size(); i++)
+    std::cout << ' ' << myvector[i];
+  std::cout << '\n';
+
   return 0;
 }
