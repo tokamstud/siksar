@@ -1,8 +1,7 @@
 import itertools
 import math
 import collections
-
-
+import timeit
 
 def ngram_score(ngrams):
     length = 4
@@ -25,7 +24,6 @@ def decrypt(ciphertex, key):
         k = ord(decrypted[i])-65
         p = chr(((c-k)%26)+65)
         decrypted.append(p)
-
     return decrypted
 
 def splitToQuad(text):
@@ -59,11 +57,16 @@ def quadgramScore(text,key,offset,quadscore,totaln):
         pass
 
     return textProb;
+def spaceout(plain):
+
+    return
 
 def loopThroughKeys(ciphertext,quadscore,totaln):
+    result = {}
     keys = ["AA", "AAA", "AAAA", "AAAAA", "AAAAAA"]
     maxscore = -10000
     lastRoundMax = -10000
+    saveScore = -10000;
     isTakeWholeKey = False
     i = 0;
     j = 0;
@@ -98,6 +101,7 @@ def loopThroughKeys(ciphertext,quadscore,totaln):
                 if score > maxscore:
                     maxscore = score
                     parentKey = list(childKey)
+                    saveScore = score;
                     pass
 
                 k += 1
@@ -124,14 +128,19 @@ def loopThroughKeys(ciphertext,quadscore,totaln):
         pass
 
         stri = ''.join(parentKey)
-        print (stri)
-    return
+        keyprnt = "###### " + stri + " = " + str(saveScore)
+        plain = ''.join(decrypt(ciphertext,stri))
+        result[keyprnt] = plain + "\n"
+        #print (keyprnt + '\n' + plain + '\n')
+
+    return result
 
 
 # getting ciphertext file
 with open('./ciphertext','r') as cipherfile:
     ciphertext = cipherfile.read().replace(' ','').replace('\n','')
 
+timeSample = timeit.default_timer()
 # getting training sample
 sample = {}
 with open("./ngrams/quadgrams") as f:
@@ -144,6 +153,26 @@ totaln = sum(sample.values())
 
 # count logaritmig score of sample quadgrams
 quadscore = ngram_score(sample)
+stopSample = timeit.default_timer()
 
+timeLoop = timeit.default_timer()
+results = loopThroughKeys(ciphertext,quadscore,totaln)
+stopLoop = timeit.default_timer()
 
-loopThroughKeys(ciphertext,quadscore,totaln)
+con1 = "Sample calculations time | " + str(stopSample-timeSample)
+con2 = "Evaluation of keys  time | " + str(stopLoop-timeLoop)
+con3 = "Total  elapsed  time     | " + str(stopLoop-timeSample)
+con4 = con1 + '\n' + con2 + '\n' + con3 + '\n'
+# to console
+for k in results:
+    prnt = k + '\n' + results[k]
+    print (prnt)
+print (con4)
+
+# to file
+file = open('./output/results.md', 'w+')
+file.write("## Python results \n desc.|time\n-|-\n")
+file.write(con4)
+for k in results:
+    prnt = k + '\n' + results[k]
+    file.write(prnt)
