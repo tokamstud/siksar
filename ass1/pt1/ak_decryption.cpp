@@ -1,9 +1,12 @@
-#include<iostream>
-#include<fstream>
-#include<vector>
-#include<map>
-#include<algorithm>
-#include<unistd.h>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <unistd.h>
+#include <math.h>
+#include <utility>
+#include <numeric>
 
 using namespace std;
 
@@ -12,6 +15,9 @@ struct ngram_decr {
   vector<string> ppttext; // possible plain text output
   vector<string> promising_sets; // choosen promising word chunks
 };
+
+map<string,long> quadgrams;
+
 
 void str_to_file(string fragments, string ppfile) {
   ofstream outfile(ppfile.c_str());
@@ -80,6 +86,26 @@ vector<char> read_to_vector_ns(string filename) {
   return remove_spaces(read_to_vector(filename));
 }
 
+map<string,long> read_quadgrams(string sample) {
+  ifstream infile(sample);
+
+  map<string,long> qdg;
+  string a;
+  long b;
+  while (infile >> a >> b){
+    // process pair (a,b)
+    qdg[a] = b;
+  }
+  return qdg;
+}
+
+map<string, float> quadg_logscore(map<string, long> qdg, float total) {
+  map<string, float> nqdg;
+  for (auto &ent : qdg) {
+    nqdg[ent.first] = log10((float(ent.second)/total));
+  }
+  return nqdg;
+}
 
 // decrypt_with_key decrypts partial message in scope with given key
 vector<char> decrypt_with_key(vector<char> vek, int scope, vector<char> key) {
@@ -126,7 +152,9 @@ vector<string> split_to_ngrams(vector<char> vec, int n) {
   return ngrams;
 }
 
-vector<char> prepare_relevant_chunks(vector<char> plainvec, int keyl, int part, vector<char> v) {
+int counters = 0;
+
+vector<char> prepare_relevant_chunks(vector<char> plainvec, int keyl, int part) {
   vector<char> relevant_chunks;
   vector<char> kschunk;
   vector<char> pschunk;
@@ -144,32 +172,40 @@ vector<char> prepare_relevant_chunks(vector<char> plainvec, int keyl, int part, 
     }
     kschunk.push_back(plainvec.at(i));
   }
-
   return relevant_chunks;
 }
 
-long quad_stat(vector<string> data, string sample) {
-  // TODO: quadram statistics here
+long quad_stat(vector<string> data, map<string,float> quadscore, long totaln) {
+  // TODO: count probability of data
+  float totalprob = 0;
 
-  return 5;
+  for (auto &quad : data) {
+    if (quadscore.count(quad) > 0) {
+      totalprob += quadscore[quad];
+    } else {
+      totalprob += log10(0.1/totaln);
+    }
+  }
+
+  return totalprob;
 }
 
-long log_prob(vector<char> plainvec, int keyl, int part, vector<char> v,string sample) {
+long log_prob(vector<char> plainvec, int part, vector<char> key, map<string,float> quadscore, long totaln) {
 
-  vector<char> relevant_chunks = prepare_relevant_chunks(plainvec,keyl,part,v);
+  vector<char> relevant_chunks = prepare_relevant_chunks(plainvec,key.size(),part);
   vector<string> data = split_to_ngrams(relevant_chunks,4);
-  long prop = quad_stat(data,sample);
-
-  return prop;
+  long prob = quad_stat(data,quadscore, totaln);
+  return prob;
 }
 
+map<vector<char>,long> decryption_sequence(vector<char> cipvec, int scope, string output, map<string,float> quadscore, long totaln) {
 
-map<vector<char>,long> decryption_sequence(vector<char> cipvec,string sample, int scope,string output) {
-  vector<char> plainvector;
-  long maxscore = 0;
-  long score = 0;
+  vector<char> child_dec;
+  long maxscore = -10000;
+  long score = -10000;
+  long last_rount_max = -10000;
   int pass_count = 1;
-  long pass_max = 0;
+  bool is_whole_key = false;
 
   map<vector<char>,long> parent_score;
   map<vector<char>,long> tmp_parent_score;
@@ -177,54 +213,58 @@ map<vector<char>,long> decryption_sequence(vector<char> cipvec,string sample, in
   vector<char> init_key (1,'A');
   vector<char> parent_key;
   vector<char> child_key;
+
+  int keylength;
   for (size_t i = 2; i < 7; i++) {
     // next independent session from previous
     init_key.push_back('A');
     parent_key = init_key;
-
+    keylength = i;
     for (size_t j = 0; j < i; j++) {
       child_key = parent_key;
       for (size_t k = 0; k < 26; k++) {
-
-        child_key.at(j) = 'A' + k;
-
-        plainvector = decrypt_with_key(cipvec, scope, child_key);
-        if (pass_count > 1) {
-          score = log_prob(plainvector,i,i,child_key,sample);
+        int offset;
+        if (is_whole_key) {
+          offset = keylength;
         } else {
-          score = log_prob(plainvector, i,j,child_key,sample);
+          offset = j;
         }
 
+        child_key.at(j) = 'A' + k;
+        child_dec = decrypt_with_key(cipvec, scope, child_key);
+        score = log_prob(child_dec,offset,child_key,quadscore, totaln);
+
+        //cout << vector_to_string(child_key) << " : " << score << endl;
         if (score > maxscore) {
           maxscore = score;
           parent_key = child_key;
+          //cout << vector_to_string(child_key) << " : " << score << endl;
         }
 
       }
-      if ((j+1) == i) {
-        // if this was last iteration
-        if (pass_count == 1) {
-          j = 0;
-          pass_count++;
-          pass_max = maxscore;
+      if ((j+1) == keylength) {
+        // if this was last letter in current key
+        is_whole_key = true;
+        if (!(maxscore > last_rount_max)) {
+          break;
         }
-        if (pass_count > 1 && maxscore > pass_max) {
-          j = 0;
-          pass_max = maxscore;
-          pass_count++;
+        j--; // star from f rst letter current key
+        last_rount_max = maxscore;
         }
       }
+      // saved this key value to public var
+      parent_score[parent_key] = maxscore;
+      last_rount_max = -1000;
+      maxscore = -10000;
     }
-    // saved this key value to public var
-    parent_score[parent_key] = maxscore;
 
-    maxscore = 0;
-  }
   string str;
   for (auto& x: parent_score) {
     string st = vector_to_string(x.first);
     str+=st + ": " + to_string(x.second) + "\n";
+    str+=vector_to_string(decrypt_with_key(cipvec,scope,x.first)) + "\n";
   }
+
   str_to_file(str,output);
   return parent_score;
 }
@@ -238,12 +278,18 @@ int main() {
   system("exec rm output/*.frag");
 
   vector<char> ciphervector = read_to_vector_ns(ctfile);
+
+  map<string, long> qdg = read_quadgrams(sample);
+  float totn =0.0; // total number of quadgrams in sample
+  for (auto &ent : qdg) {
+    totn += ent.second;
+  }
+  map<string, float> qdglog = quadg_logscore(qdg, totn);
+  map<vector<char>, long> result = decryption_sequence(ciphervector,workspace,output,qdglog,totn);
+
   // vector<char> plaintvector = decrypt_with_key(ciphervector,workspace, {'D','A','T','F','B','A'});
   //string fragments = vector_to_string(plaintvector);
   //str_to_file(fragments,output);
-
-  map<vector<char>, long> result = decryption_sequence(ciphervector,sample,workspace,output);
-
 
   return 0;
 }
