@@ -27,7 +27,8 @@ def decrypt(ciphertex, key):
     return decrypted
 
 def splitToQuad(text):
-    length = len(text);
+
+    length = len(text)
     while length%4 != 0:
         length -= 1
         pass
@@ -38,14 +39,22 @@ def splitToQuad(text):
         pass
     return quads;
 
-def relevantChunks(text, offset):
+def relevantChunks(text, offset,key):
+#    klen = len(key)
+#    for j in range(text):
+#
+#        for i in range(klen):
+#            j+=1
+#            if i > klen:
+#                break
+#            chars += text[i+j]
     raw = [text[i] + text[i+1] + text[i+2] for i in range(0,len(text),5)]
     relevantChunks = list(''.join(raw))
     return relevantChunks
 
 def quadgramScore(text,key,offset,quadscore,totaln):
     # TODO : extract only relevant chunks based on key
-    relevantText = relevantChunks(text, offset)
+    relevantText = relevantChunks(text, offset,key)
     myquads = collections.Counter(splitToQuad(relevantText))
     textProb = 0;
     for quad in myquads:
@@ -71,6 +80,7 @@ def loopThroughKeys(ciphertext,quadscore,totaln):
     i = 0;
     j = 0;
     k = 0;
+    # for loop in python was annoying
     while(i<len(keys)):
 
         keyarr = list(keys[i])
@@ -120,11 +130,11 @@ def loopThroughKeys(ciphertext,quadscore,totaln):
                 lastRoundMax = maxscore
                 pass
 
-            j += 1
+            j += 1 # increment iteration
             pass
         lastRoundMax = -10000
         maxscore = -10000
-        i += 1
+        i += 1 # increment iteraction
         pass
 
         stri = ''.join(parentKey)
