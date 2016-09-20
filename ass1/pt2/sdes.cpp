@@ -10,7 +10,7 @@
 #include <future>
 #include <mutex>
 #include <condition_variable>
-
+#include <sstream>
 using namespace std;
 
 std::mutex mtx;
@@ -356,7 +356,8 @@ vector<int> brutx_T2SDES(char* buffer,int from = 0,int to = 1024) {
   return c_keys;
 }
 
-void print_plain(char* cxt, int key, int key2=0,bool triple=false) {
+string decrypt_plain(char* cxt, int key, int key2=0,bool triple=false) {
+  std::ostringstream out;
   int buff[60];
   for (size_t j = 0; j < 60; j++) {
     buff[j] = 0;
@@ -366,15 +367,17 @@ void print_plain(char* cxt, int key, int key2=0,bool triple=false) {
   }
   if (triple) {
     for (auto&block:buff) {
-      cout << (char)tripleSDESdec(block,key,key2);
+      out << (char)tripleSDESdec(block,key,key2) ;
     }
-    cout << endl;
+    out << endl;
   } else {
     for (auto&block:buff) {
-      cout << (char)decrypt(block,gen_keys(key));
+      out << (char)decrypt(block,gen_keys(key));
     }
-    cout << endl;
+    out << endl;
   }
+  string out_plain = out.str();
+  return out_plain;
 }
 
 void T_brutx_T2SDES(char* cxt, vector<int>& T_ks,int f, int t, string msg) {
@@ -386,40 +389,56 @@ void T_brutx_T2SDES(char* cxt, vector<int>& T_ks,int f, int t, string msg) {
   ready = true;
 }
 
-
+void str_to_file(string fragments, string ppfile) {
+  ofstream outfile(ppfile.c_str());
+  string data(fragments);
+  outfile << data << endl;
+  outfile.close();
+}
 
 int main() {
   const string cxt1f("cxt1.txt");
   const string cxt2f("cxt2.txt");
+  const string output("./output/plaintext.frag");
 
   clock_t beginLoad1 = clock();
   char* cxt1 = read_to_mem(cxt1f);
   char* cxt2 = read_to_mem(cxt2f);
 
+  std::ostringstream outputSDES;
   // Simplified DES - SDES
   clock_t beginSDES = clock();
   int ks = brutx_SDES(cxt1);
   if (ks<0) {
-    cout << "Key could not be found" << endl;
+    outputSDES << "Key could not be found" << endl;
   }
-  cout << "K1:"<<ks << endl;
-  print_plain(cxt1,ks);
+  outputSDES << "K1:"<< bitset<10>(ks) << endl;
+  outputSDES << decrypt_plain(cxt1,ks);
   clock_t endSDES = clock();
-  cout << "Time   SDES: " << float(endSDES-beginSDES)/CLOCKS_PER_SEC << " sek" << endl;
-  cout << endl;
-
+  outputSDES << "Time   SDES: " << float(endSDES-beginSDES)/CLOCKS_PER_SEC << " sek" << endl;
+  outputSDES << endl;
+  string outSDES = outputSDES.str();
+  cout << outSDES;
+  std::ostringstream outputT2SDES;
   // Triple SDES T2SDES
   clock_t beginT2SDES = clock();
   vector<int> kt = brutx_T2SDES(cxt2);
   if (kt[0]<0) {
-    cout << "Key could not be found" << endl;
+    outputT2SDES << "Key could not be found" << endl;
   }
-  cout << "K1:"<<kt[0] << endl;
-  cout << "K2:"<<kt[1] << endl;
-  print_plain(cxt2,kt[0],kt[1],true);
+  outputT2SDES << "K1:"<< bitset<10>(kt[0]) << endl;
+  outputT2SDES << "K2:"<< bitset<10>(kt[1]) << endl;
+  outputT2SDES << decrypt_plain(cxt2,kt[0],kt[1],true);
   clock_t endT2SDES = clock();
-  cout << "Time T2SDES: " << float(endT2SDES-beginT2SDES)/CLOCKS_PER_SEC << " sek" <<endl;
-  cout << endl<<"TOTAL  TIME: " << float(endT2SDES-beginLoad1)/CLOCKS_PER_SEC << " sek" <<endl;
+  outputT2SDES << "Time T2SDES: " << float(endT2SDES-beginT2SDES)/CLOCKS_PER_SEC << " sek" <<endl;
+  string outT2SDES = outputT2SDES.str();
+  cout << outT2SDES;
+
+  std::ostringstream totalTIME;
+  totalTIME << endl<<"TOTAL  TIME: " << float(endT2SDES-beginLoad1)/CLOCKS_PER_SEC << " sek" <<endl;
+  string outTOTAL = totalTIME.str();
+
+  str_to_file(outSDES.append(outT2SDES).append(outTOTAL),output); // write result to output file
 
   /*
   clock_t timeThread = clock();
@@ -451,6 +470,9 @@ int main() {
   //cout << bitset<8>(tripleSDESdec(0b11100110,0b1000101110,0b0110101110)) << endl;
   //cout << bitset<8>(tripleSDESdec(0b01010000,0b1011101111,0b0110101110)) << endl;
   //cout << bitset<8>(tripleSDESdec(0b10000000,0b0000000000,0b0000000000)) << endl;
+
+  //cout << bitset<8>(decrypt(0b11000010,gen_keys(0b1000101110))) << endl;
+
 
   //cout << bitset<8>(a) << endl;
   //cout << bitset<8>(b) << endl;
