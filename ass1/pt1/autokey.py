@@ -71,6 +71,7 @@ def spaceout(plain):
     return
 
 def loopThroughKeys(ciphertext,quadscore,totaln):
+    teller = 0;
     result = {}
     keys = ["AA", "AAA", "AAAA", "AAAAA", "AAAAAA"]
     maxscore = -10000
@@ -180,7 +181,7 @@ for k in results:
 print (con4)
 
 # to file
-file = open('./output/results.md', 'w+')
+file = open('./output/Py-results.md', 'w+')
 file.write("## Python results \n desc.|time\n-|-\n")
 file.write(con4)
 for k in results:

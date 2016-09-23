@@ -15,8 +15,10 @@ ak_decryption     | binary file of * ak_decryption.cpp *
 
 file | description
 -----|------------
-results.md      | textfile with the output from python program, generated on each run of *autokey.py*
-plaintext.frag  | a textfile with the output from .cpp file that iis generated on each run of *ak_decryption*
+Py-results.md      | textfile with the output from python program, generated on each run of *autokey.py*
+C++-results.md  | C++ output textfile with the output that is generated on each run of
+\_*.md files    | old output files saves
+
 ----------------------------------------------------------------------
     $ pt1/ngrams
 
@@ -45,6 +47,33 @@ probable keyword that was used to encrypt the ciphertext
 
 this program does the same thing as the python program, has slightly different
 output scores but manages to find the correct key anyway, it is unoptimized.
+----------------------------------------------------------------------
+----------------------------------------------------------------------
 
 
 # Part II. Simplified DES
+
+    $ pt2
+
+files | description
+------|------------
+sdes.cpp | C++ file that creates output for Task1-3
+sdes     | compiled binary file
+cxt1.txt | 480 bit long SDES encrypted text
+cxt2.txt | 480 bit long T2SDES encrypted text
+
+    $ pt2/output
+
+files | description
+------|------------
+plaintext.md   | the output generated from running the C++ program
+\_plaintext.md | copy of the file
+
+### Running the program
+###### C++
+
+    $ g++ -o sdes sdes.cpp
+    $ ./sdes
+
+
+sdes will create output file ./output/plaintext.md

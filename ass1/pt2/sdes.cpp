@@ -311,8 +311,8 @@ int brutx_SDES(char* buffer) {
   return c_key;
 }
 
-vector<int> brutx_T2SDES(char* buffer,int from = 0,int to = 1024) {
-
+vector<int> brutx_T2SDES(char* buffer,int from = 1024,int to = 0) {
+  int teller = 0;
   int buff[60];
   for (size_t j = 0; j < 60; j++) {
     buff[j] = 0;
@@ -327,10 +327,9 @@ vector<int> brutx_T2SDES(char* buffer,int from = 0,int to = 1024) {
 
   vector<int> c_keys; // return key
 
-  for (size_t i = from; i < to; i++) {
+  for (size_t i = from; i > to; i--) {
 
     for (size_t k = 0; k < 1024; k++) {
-
       for (auto&block:buff) {
         dec_block = tripleSDESdec(block,i,k);
         if (check_char(dec_block)) {
@@ -399,13 +398,51 @@ void str_to_file(string fragments, string ppfile) {
 int main() {
   const string cxt1f("cxt1.txt");
   const string cxt2f("cxt2.txt");
-  const string output("./output/plaintext.frag");
+  const string output("./output/plaintext.md");
 
+
+  // Task 1
+  std::ostringstream table_SDES;
+  table_SDES << "# Task 1" << endl;
+
+  table_SDES << "CIPHERTEXT" << endl;
+  table_SDES << bitset<8>(encrypt(0b00000000,gen_keys(0b0000000000))) << endl;
+  table_SDES << bitset<8>(encrypt(0b11111111,gen_keys(0b1111111111))) << endl;
+  table_SDES << bitset<8>(encrypt(0b00000000,gen_keys(0b0000011111))) << endl;
+  table_SDES << bitset<8>(encrypt(0b11111111,gen_keys(0b0000011111))) << endl;
+  table_SDES << "PLAINTEXT" << endl;
+  table_SDES << bitset<8>(decrypt(0b00011100,gen_keys(0b1000101110))) << endl;
+  table_SDES << bitset<8>(decrypt(0b11000010,gen_keys(0b1000101110))) << endl;
+  table_SDES << bitset<8>(decrypt(0b10011101,gen_keys(0b0010011111))) << endl;
+  table_SDES << bitset<8>(decrypt(0b10010000,gen_keys(0b0010011111))) << endl;
+  table_SDES << endl;
+  string out_table_SDES = table_SDES.str();
+
+  // Task 2
+  std::ostringstream table_T2SDES;
+  table_T2SDES << "# Task 2" << endl;
+
+  table_T2SDES << "CIPHERTEXT" << endl;
+  table_T2SDES << bitset<8>(tripleSDESenc(0b00000000,0b0000000000,0b0000000000)) << endl;
+  table_T2SDES << bitset<8>(tripleSDESenc(0b11010111,0b1000101110,0b0110101110)) << endl;
+  table_T2SDES << bitset<8>(tripleSDESenc(0b10101010,0b1000101110,0b0110101110)) << endl;
+  table_T2SDES << bitset<8>(tripleSDESenc(0b10101010,0b1111111111,0b1111111111)) << endl;
+  table_T2SDES << "PLAINTEXT" << endl;
+  table_T2SDES << bitset<8>(tripleSDESdec(0b11100110,0b1000101110,0b0110101110)) << endl;
+  table_T2SDES << bitset<8>(tripleSDESdec(0b01010000,0b1011101111,0b0110101110)) << endl;
+  table_T2SDES << bitset<8>(tripleSDESdec(0b10000000,0b0000000000,0b0000000000)) << endl;
+  table_T2SDES << endl;
+  string out_table_T2SDES = table_T2SDES.str();
+
+
+  // Task 3
   clock_t beginLoad1 = clock();
   char* cxt1 = read_to_mem(cxt1f);
   char* cxt2 = read_to_mem(cxt2f);
 
   std::ostringstream outputSDES;
+  outputSDES << "# Task 3" << endl;
+
   // Simplified DES - SDES
   clock_t beginSDES = clock();
   int ks = brutx_SDES(cxt1);
@@ -438,7 +475,6 @@ int main() {
   totalTIME << endl<<"TOTAL  TIME: " << float(endT2SDES-beginLoad1)/CLOCKS_PER_SEC << " sek" <<endl;
   string outTOTAL = totalTIME.str();
 
-  str_to_file(outSDES.append(outT2SDES).append(outTOTAL),output); // write result to output file
 
   /*
   clock_t timeThread = clock();
@@ -462,29 +498,7 @@ int main() {
   cout << "Time THREADS TIME: " << float(stopThread-timeThread)/CLOCKS_PER_SEC << endl;
   */
 
-
-  //cout << bitset<8>(tripleSDESenc(0b00000000,0b0000000000,0b0000000000)) << endl;
-  //cout << bitset<8>(tripleSDESenc(0b11010111,0b1000101110,0b0110101110)) << endl;
-  //cout << bitset<8>(tripleSDESenc(0b10101010,0b1000101110,0b0110101110)) << endl;
-  //cout << bitset<8>(tripleSDESenc(0b10101010,0b1111111111,0b1111111111)) << endl;
-  //cout << bitset<8>(tripleSDESdec(0b11100110,0b1000101110,0b0110101110)) << endl;
-  //cout << bitset<8>(tripleSDESdec(0b01010000,0b1011101111,0b0110101110)) << endl;
-  //cout << bitset<8>(tripleSDESdec(0b10000000,0b0000000000,0b0000000000)) << endl;
-
-  //cout << bitset<8>(decrypt(0b11000010,gen_keys(0b1000101110))) << endl;
-
-
-  //cout << bitset<8>(a) << endl;
-  //cout << bitset<8>(b) << endl;
-  //cout << bitset<8>(c) << endl;
-  //cout << endl;
-  //cout << endl;
-
-  //vector<int> super = gen_keys(1002);
-  //cout <<  super.at(0) << endl;
-  //cout << super.at(0) << endl;
-
-  cout << endl;
+  str_to_file(out_table_SDES.append(out_table_T2SDES).append(outSDES).append(outT2SDES).append(outTOTAL),output); // write result to output file
 
   return 0;
 }

@@ -272,10 +272,10 @@ map<vector<char>,long> decryption_sequence(vector<char> cipvec, int scope, strin
 int main() {
   const int workspace = 415;
   const string ctfile("ciphertext");
-  const string output("./output/plaintext.frag");
+  const string output("./output/C++-results.md");
   const string sample("./ngrams/quadgrams");
   // clear folder
-  system("exec rm output/*.frag");
+  //system("exec rm output/*.md");
 
   vector<char> ciphervector = read_to_vector_ns(ctfile);
 

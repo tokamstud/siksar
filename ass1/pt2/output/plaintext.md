@@ -1,0 +1,35 @@
+# Task 1
+CIPHERTEXT
+11110000
+00001111
+01000011
+11100001
+PLAINTEXT
+00111000
+00001100
+11111100
+10100101
+
+# Task 2
+CIPHERTEXT
+11110000
+10111001
+11100100
+00000100
+PLAINTEXT
+11111101
+01001111
+01010010
+
+# Task 3
+K1:1111101010
+simplifieddesisnotsecureenoughtoprovideyousufficientsecurity
+Time   SDES: 0.031454 sek
+
+K1:1111101010
+K2:0101011111
+simplifieddesisnotsecureenoughtoprovideyousufficientsecurity
+Time T2SDES: 1.84354 sek
+
+TOTAL  TIME: 1.87508 sek
+
