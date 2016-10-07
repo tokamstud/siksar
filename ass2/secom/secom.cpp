@@ -1,22 +1,24 @@
+#include <iostream>
+#include <math.h>
 
-class client_secure32 {
-  protected private int pr_k;
-  public int pu_k;
+using namespace std;
 
-private:
-  int get_pr_k() {
-    // TODO:
-    return 0;
-  }
+class client_secure {
+  private:
+    int pr_k;
 
-  int generate_pr_k(int p) {
-    // TODO:
-    return 0;
-  }
+    int get_pr_k() {
+      // TODO:
+      return 0;
+    }
+    int generate_pr_k() {
+      // TODO:
+      return 0;
+    }
 
+  int pu_k;
 };
 
 int main() {
-
   return 0;
 }
