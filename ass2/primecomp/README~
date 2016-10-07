@@ -1,0 +1,5 @@
+## Author Tomasz Gliniecki
+generates binary file that tells what numbers up to 2^32 are primary.
+start of the file:
+0110101000101000101
+1 is not prime, 2 is prime, 3 is prime, 4 is not, 5 is prime and so on
