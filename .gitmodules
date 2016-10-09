@@ -1,0 +1,3 @@
+[submodule "ass2/bigint"]
+	path = ass2/bigint
+	url = http://github.com/kasparsklavins/bigint

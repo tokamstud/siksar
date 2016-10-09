@@ -1,9 +1,1 @@
 ## Author Tomasz Gliniecki
-generates binary file that can be used as looup to check if given number up to n <- the input paramter eg. 2^32, is prime..
-start of the file:
-0110101000101000101
-1 is not prime, 2 is prime, 3 is prime, 4 is not, 5 is prime and so on.
-
-void generate_bin(double n) {}
-
-bool check_prim(double p) {}
