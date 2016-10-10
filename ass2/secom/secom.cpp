@@ -2,25 +2,14 @@
 #include <math.h>
 #include <gmp.h>
 
+#include "../bigprime/bigprime.h"
+
 using namespace std;
 
-class client_secure {
-  private:
-    int pr_k;
+int main(int argc, char* argv[]) {
 
-    int get_pr_k() {
-      // TODO:
-      return 0;
-    }
-    int generate_pr_k() {
-      // TODO:
-      return 0;
-    }
+	Bigprime bp (2048);
+	
 
-  int pu_k;
-};
-
-int main() {
-
-  return 0;
+	return 0;
 }
