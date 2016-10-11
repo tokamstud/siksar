@@ -13,6 +13,7 @@ public:
 	void initialize_random();
 	void generate_random(int i);
 	void generate_prime();
+	void set_new_prime();
 };
 
 #endif

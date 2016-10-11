@@ -7,14 +7,23 @@ public:
 	mpz_t Pu_k;//public own key
 	mpz_t Prime;
 	mpz_t alpha;//primitive root
-	Client(mpz_t Prime, mpz_t alpha);
-	set_other_public(mpz_t Pu_x);
-	void get_public(mpz_t ret);
-private:
+	Client(mpz_t Prime, mpz_t alpha,gmp_randstate_t state);
+	Client(mpz_t seed_prime,gmp_randstate_t state);
+	~Client();
+	void exchange_public(mpz_t Pu_x);
+	void calc_public(mpz_t ret);
+	// Public agreement;
+	void make_alpha_Prime(mpz_t prime_seed);
+	void print_secret();
+	void print_nsecret();
+
 	mpz_t Pr_k;//Private key
 	mpz_t Se_k; // Secret key for enc/dec
-	void generate_private_key(mpz_t Prime, mpz_t alpha);
-	void generate_secret_key(mpz_t Pu_x);
-}
+	mpz_t Se_kn;// next key
+	void generate_private_key(mpz_t Prime, mpz_t alpha, gmp_randstate_t state);
+	void generate_secret_key();
+
+	void generate_next_key();
+};
 
 #endif
