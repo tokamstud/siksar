@@ -7,6 +7,7 @@ public:
 	mpz_t Pu_k;//public own key
 	mpz_t Prime;
 	mpz_t alpha;//primitive root
+	mpz_t n;//blum blum shub n=modulo
 	Client(mpz_t Prime, mpz_t alpha,gmp_randstate_t state);
 	Client(mpz_t seed_prime,gmp_randstate_t state);
 	~Client();
@@ -16,7 +17,9 @@ public:
 	void make_alpha_Prime(mpz_t prime_seed);
 	void print_secret();
 	void print_nsecret();
-
+	void find_bbs_init();
+	void set_bbs_init(mpz_t n);
+	void get_bbs_init(mpz_t n);
 	mpz_t Pr_k;//Private key
 	mpz_t Se_k; // Secret key for enc/dec
 	mpz_t Se_kn;// next key

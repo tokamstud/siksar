@@ -13,11 +13,13 @@ Client::Client(mpz_t seed_prime, gmp_randstate_t state) {
 	mpz_init(this->Prime);
 	mpz_init(this->alpha);
 	mpz_init(this->Se_kn);
-	mpz_set(this->Se_kn, this->Se_k);
 
 	make_alpha_Prime(seed_prime);
 	generate_private_key(this->Prime, this->alpha, state);
 	calc_public(this->Pu_k);
+
+	// blum blum shut variables
+	mpz_init(this->n);
 }
 
 Client::Client(mpz_t Prime, mpz_t alpha, gmp_randstate_t state) {
@@ -26,22 +28,24 @@ Client::Client(mpz_t Prime, mpz_t alpha, gmp_randstate_t state) {
 	mpz_init(this->Prime);
 	mpz_init(this->alpha);
 	mpz_init(this->Se_kn);
-	mpz_set(this->Se_kn, this->Se_k);
 
 	mpz_set(this->Prime,Prime);
 	mpz_set(this->alpha,alpha);
 
 	generate_private_key(this->Prime, this->alpha, state);
 	calc_public(this->Pu_k);
+
+	// blum blum shut variables
+	mpz_init(this->n);
 }
 
 Client::~Client() {}
 
 void Client::print_secret() {
-	mpz_out_str(stdout,10,this->Se_k);cout<<endl;
+	mpz_out_str(stdout,62,this->Se_k);cout<<endl;
 }
 void Client::print_nsecret() {
-	mpz_out_str(stdout,10,this->Se_kn);cout<<endl;
+	mpz_out_str(stdout,62,this->Se_kn);cout<<endl;
 }
 
 void Client::generate_private_key(mpz_t Prime, mpz_t alpha, gmp_randstate_t state) {
@@ -71,6 +75,8 @@ void Client::generate_secret_key() {
 	// TODO: the secret key = Pu_x ^ Pr_k mod Prime
 	mpz_init(this->Se_k);
 	mpz_powm(this->Se_k,this->Pu_x,this->Pr_k,this->Prime);// Pu_x^Pr_k mod p
+	mpz_set(this->Se_kn, this->Se_k);
+	// run blum blum shub to generate key K, from K_ba
 }
 
 void Client::exchange_public(mpz_t Pu_x) {
@@ -88,7 +94,7 @@ void Client::make_alpha_Prime(mpz_t seed_prime) {
 	mpz_init_set_str(i,"2",10);//arbitrary int i = 1;
 	mpz_mul(prime,seed_prime,s);//seed=seed_prime*2;
 	mpz_add(prime,prime,c);//prime+=1;
-	do {//while a^q mod p = 1
+	do {//while a^q = 1 mod p
 		mpz_add(i,i,c);//i++;
 		mpz_powm(test,i,seed_prime,prime);
 	} while(mpz_cmp(test,c)==0);
@@ -97,13 +103,9 @@ void Client::make_alpha_Prime(mpz_t seed_prime) {
 	mpz_set(this->Prime,prime);
 }
 
-void Client::generate_next_key() {
-	gmp_randstate_t state;
-	gmp_randinit_mt(state);
-	unsigned long int rseed = time(NULL);
-	gmp_randseed_ui(state, rseed);
+
+void Client::find_bbs_init() {
 	// Blum Blum Shub
-	// TODO:
 	// generate two large prime numbers p x q = n
 	// check if p=3mod4 and q=3mod4
 	// check if this is false : p|key and q|key
@@ -114,9 +116,9 @@ void Client::generate_next_key() {
 	mpz_init_set_str(c,"3",10);
 	mpz_init_set_str(s,"2",10);
 	mpz_init_set_str(z,"0",10);
-	//mpz_sizeinbase(this->Prime,2)
-	Bigprime p (1024, state);
-	Bigprime q (1024, state);
+	int size = mpz_sizeinbase(this->Prime,2)/2;
+	Bigprime p (size);
+	Bigprime q (size);
 	while (mpz_congruent_p(p.prime,c,mod)==0 && mpz_congruent_p(q.prime,c,mod)==0) {
 		p.generate_prime();
 		q.generate_prime();
@@ -124,12 +126,21 @@ void Client::generate_next_key() {
 	while (mpz_congruent_p(this->Se_kn,z,p.prime)!=0 && mpz_congruent_p(this->Se_kn,z,q.prime)!=0) {
 		p.generate_prime();
 		q.generate_prime();
-		cout<<endl;
-		mpz_out_str(stdout,10,p.prime);cout<<endl;
-		mpz_out_str(stdout,10,q.prime);cout<<endl;
 	}
-	mpz_t n;
-	mpz_init(n);
-	mpz_mul(n,p.prime,q.prime);
-	mpz_powm(this->Se_kn,this->Se_kn,s,n);
+	mpz_init(this->n);
+	mpz_mul(this->n,p.prime,q.prime);
+}
+
+void Client::set_bbs_init(mpz_t n) {
+	mpz_set(this->n,n);
+}
+
+void Client::get_bbs_init(mpz_t n) {
+	mpz_set(n,this->n);
+}
+
+void Client::generate_next_key() {
+	mpz_t s;
+	mpz_init_set_str(s,"2",10);
+	mpz_powm(this->Se_kn,this->Se_kn,s,this->n);
 }
