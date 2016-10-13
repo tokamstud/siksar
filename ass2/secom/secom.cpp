@@ -9,6 +9,24 @@
 
 using namespace std;
 
+void encrypt(int key) {
+	byte iv[AES::BLOCKSIZE];
+	rnd.GenerateBlock(iv, AES::BLOCKSIZE);
+
+	char plainText[] = "Hello Bobby!";
+	int messageLen = (int)strlen(plainText) + 1;
+
+
+	// Encryption
+	CFV_Mode<AES>::Encryption cfbEncryption(key, sizeof(key), iv);
+	cfvEncryption.ProsessData((byte*)plainText, (byte*)plainText, messageLen);
+
+	// Decrypt
+	CFV_Mode<AES>::Decryption cfbDecryption(key, sizeof(key), iv);
+	cfbDecryption.ProsessData((byte*)plainText, (byte*)plainText, messageLen);
+
+}
+
 int main(int argc, char* argv[]) {
 	gmp_randstate_t state;
 	gmp_randinit_mt(state);
@@ -49,22 +67,8 @@ int main(int argc, char* argv[]) {
 	alice.generate_next_key();
 	bobby.generate_next_key();
 
-	cout<<endl<<endl;
-	alice.print_nsecret();
-	bobby.print_nsecret();
-
 	alice.generate_next_key();
 	bobby.generate_next_key();
 
-	cout<<endl<<endl;
-	alice.print_nsecret();
-	bobby.print_nsecret();
-
-	alice.generate_next_key();
-	bobby.generate_next_key();
-
-	cout<<endl<<endl;
-	alice.print_nsecret();
-	bobby.print_nsecret();
 	return 0;
 }
