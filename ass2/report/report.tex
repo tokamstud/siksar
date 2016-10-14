@@ -1,0 +1,63 @@
+\documentclass[12pt]{report}
+
+\usepackage[margin=1.5in]{geometry}
+\usepackage{graphicx}% GRAFIKK (BILDER)
+\usepackage{epsfig} % GRAFIKK (BILDER EPS-VECTOR FORMAT)
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancybox}
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+\renewcommand{\bibname}{Works Cited}
+%\usepackage{times} % Uncomment to use the Times New Roman font
+
+\newenvironment{CenteredBox}{%
+  \begin{Sbox}}{% Save the content in a box
+  \end{Sbox}\centerline{\parbox{\wd}{\TheSbox}}}% And output it centered
+\makeatother
+
+
+\title{DAT 510: Assignment 1} % Title
+
+\author{Tomasz \textsc{Gliniecki}} % Author name
+
+\date{10.10.2016} % Date for the report
+
+\begin{document}
+
+\maketitle % Insert the title, author and date
+
+
+%----------------------------------------------------------------------------------------
+%Abstract
+%----------------------------------------------------------------------------------------
+
+\section*{Abstract}
+The assignment was to crack ciphertexts, encrypted with different encryption algorythms, and also implement Simplified DES, and Triple SDES with two keys. To crack the ciphertexts, neccesary software tools were written in Python and C++. Ciphertexts provided with the assignment were cracked succesfully.
+
+\section*{Part I}
+
+
+\begin{thebibliography}{9}
+
+\bibitem{engletfreq}
+  English Letter frequencies.
+  \\\texttt{\url{http://crypto.interactive-maths.com/autokey-cipher.html}}
+
+\bibitem{quadanal}
+  Quadgram analysis, Practical Cryptograpy.
+  \\\texttt{\url{http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/}}
+
+\bibitem{autokeyc}
+  Eutokey Cipher
+  \\\texttt{\url{http://www.cryptool-online.org/index.php?option=com_content&view=article&id=104&Itemid=127&lang=en}}
+
+\bibitem{viganal}
+  Vigenere letter frequency analysis
+  \\\texttt{\url{http://www.cs.mtu.edu/~shene/NSF-4/Tutorial/VIG/Vig-Frequency-Analysis.html}}
+
+  
+\end{thebibliography}
+
+
+\end{document}

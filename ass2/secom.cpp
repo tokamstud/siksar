@@ -4,7 +4,7 @@
 #include "cryptopp/cryptlib.h"
 
 // local
-#include "../bigprime/bigprime.h"
+#include "bigprime/bigprime.h"
 #include "client.h"
 
 

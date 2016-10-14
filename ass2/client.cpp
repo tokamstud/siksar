@@ -10,7 +10,7 @@
 
 // local
 #include "client.h"
-#include "../bigprime/bigprime.h"
+#include "bigprime/bigprime.h"
 
 using namespace std;
 
