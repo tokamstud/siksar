@@ -1,13 +1,21 @@
 #include<iostream>
 #include<math.h>
 #include<gmp.h>
+#include <iomanip>
 
+
+#include "cryptopp/modes.h"
+#include "cryptopp/aes.h"
+#include "cryptopp/filters.h"
+
+// local
 #include "client.h"
 #include "../bigprime/bigprime.h"
 
 using namespace std;
 
-Client::Client(mpz_t seed_prime, gmp_randstate_t state) {
+Client::Client(mpz_t seed_prime, gmp_randstate_t state, string name) {
+	this->client_name = name;
 	mpz_init(this->Pu_x);
 	mpz_init(this->Pu_k);
 	mpz_init(this->Prime);
@@ -22,7 +30,8 @@ Client::Client(mpz_t seed_prime, gmp_randstate_t state) {
 	mpz_init(this->n);
 }
 
-Client::Client(mpz_t Prime, mpz_t alpha, gmp_randstate_t state) {
+Client::Client(mpz_t Prime, mpz_t alpha, gmp_randstate_t state, string name) {
+	this->client_name = name;
 	mpz_init(this->Pu_x);
 	mpz_init(this->Pu_k);
 	mpz_init(this->Prime);
@@ -37,6 +46,7 @@ Client::Client(mpz_t Prime, mpz_t alpha, gmp_randstate_t state) {
 
 	// blum blum shut variables
 	mpz_init(this->n);
+
 }
 
 Client::~Client() {}
@@ -143,4 +153,67 @@ void Client::generate_next_key() {
 	mpz_t s;
 	mpz_init_set_str(s,"2",10);
 	mpz_powm(this->Se_kn,this->Se_kn,s,this->n);
+}
+
+void dump_plain(string plaintext) {
+	std::cout << "Plain Text (" << plaintext.size() << " bytes)" << std::endl;
+    std::cout << plaintext;
+    std::cout << std::endl << std::endl;
+}
+
+void dump_cipher(string ciphertext) {
+	std::cout << "Cipher Text (" << ciphertext.size() << " bytes)" << std::endl;
+
+	for( int i = 0; i < ciphertext.size(); i++ ) {
+
+		std::cout << "0x" << std::hex << (0xFF & static_cast<byte>(ciphertext[i])) << " ";
+	}
+
+	std::cout << std::endl << std::endl;
+
+}
+
+string Client::encrypt(string plaintext) {
+	byte key[ CryptoPP::AES::DEFAULT_KEYLENGTH ], iv[ CryptoPP::AES::BLOCKSIZE ];
+	memset( key, mpz_get_ui(this->Se_kn), CryptoPP::AES::DEFAULT_KEYLENGTH );
+    memset( iv, 0x00, CryptoPP::AES::BLOCKSIZE );
+
+	string ciphertext;
+
+	CryptoPP::AES::Encryption aesEncryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
+	CryptoPP::CBC_Mode_ExternalCipher::Encryption cbcEncryption( aesEncryption, iv );
+
+	CryptoPP::StreamTransformationFilter stfEncryptor(cbcEncryption, new CryptoPP::StringSink( ciphertext ) );
+	stfEncryptor.Put( reinterpret_cast<const unsigned char*>( plaintext.c_str() ), plaintext.length() + 1 );
+	stfEncryptor.MessageEnd();
+
+	cout << "---------------------------------------" << endl;
+	cout << this->client_name << " is ENCRYPTING:" << endl;
+	dump_plain(plaintext);
+	dump_cipher(ciphertext);
+	cout << "---------------------------------------" << endl;
+
+	return ciphertext;
+}
+
+void Client::decrypt(string ciphertext) {
+	byte key[ CryptoPP::AES::DEFAULT_KEYLENGTH ], iv[ CryptoPP::AES::BLOCKSIZE ];
+	memset( key, mpz_get_ui(this->Se_kn), CryptoPP::AES::DEFAULT_KEYLENGTH );
+    memset( iv, 0x00, CryptoPP::AES::BLOCKSIZE );
+
+	string decryptedtext;
+
+	CryptoPP::AES::Decryption aesDecryption(key, CryptoPP::AES::DEFAULT_KEYLENGTH);
+	CryptoPP::CBC_Mode_ExternalCipher::Decryption cbcDecryption( aesDecryption, iv );
+
+	CryptoPP::StreamTransformationFilter stfDecryptor(cbcDecryption, new CryptoPP::StringSink( decryptedtext ) );
+	stfDecryptor.Put( reinterpret_cast<const unsigned char*>( ciphertext.c_str() ), ciphertext.size() );
+	stfDecryptor.MessageEnd();
+
+	cout << "---------------------------------------" << endl;
+	cout << this->client_name << " is DECRYPTING:" << endl;
+	dump_cipher(ciphertext);
+	dump_plain(decryptedtext);
+	cout << "---------------------------------------" << endl;
+
 }
