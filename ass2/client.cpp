@@ -110,7 +110,7 @@ void Client::make_alpha_Prime(mpz_t seed_prime) {
 	mpz_mul(prime,seed_prime,s);//prime=seed_prime*2;
 	mpz_add(prime,prime,c);//prime+=1;
 
-	while(!seed.test_if_prime(seed_prime)) {
+	while(!seed.test_if_prime(prime)) {
 		//mpz_out_str(stdout,62,prime);cout<<endl;
 		//cout << "Not strong prime"<< endl;
 		seed.generate_prime();
