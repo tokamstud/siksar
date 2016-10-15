@@ -42,6 +42,7 @@ public:
 	// enc-dec
 	string encrypt(string plaintext);
 	void decrypt(string ciphertext);
+	int size_p;
 };
 
 #endif

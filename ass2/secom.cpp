@@ -36,7 +36,13 @@ void start_conversation(Client alice, Client bobby) {
 			alice.generate_next_key();
 			alice.decrypt(ciphertext);
 		}
+}
 
+void get_from_file(mpz_t rop) {
+	FILE* pfile;
+	pfile = fopen("./primes/*","r");
+	mpz_inp_str(rop,pfile,62);
+	fclose(pfile);
 }
 
 int main(int argc, char* argv[]) {
@@ -45,12 +51,23 @@ int main(int argc, char* argv[]) {
 	unsigned long int rseed = time(NULL);
 	gmp_randseed_ui(state, rseed);
 
-	// generate seed_prime for Prime and generator
-	Bigprime seed (2048);
+	int psize;
+	mpz_t seed_prime;
+	mpz_init(seed_prime);
+
+	if (argc < 2) {
+		psize = 1024;
+	} else {
+		psize = atoi(argv[1]);
+	}
+
+	Bigprime seed (psize);
+	mpz_set(seed_prime,seed.prime);
 
 	// alice proposes Prime and alpha
 	string name1 = "Alice";
-	Client alice (seed.prime, state, name1);
+
+	Client alice (seed_prime, state, name1);
 
 	//agreed Prime and generator/alpha
 	mpz_t Prime,alpha;
@@ -61,7 +78,7 @@ int main(int argc, char* argv[]) {
 
 	cout << endl;
 	cout << "The cyclic group and public parameters used" << endl;
-	cout << "Cyclic group 2048bit:" << endl;
+	cout << "Cyclic group " << psize << "bit:" << endl;
 	mpz_out_str(stdout,62,Prime);cout<<endl;
 	cout << "The generator:" << endl;
 	mpz_out_str(stdout,62,alpha);cout<<endl;

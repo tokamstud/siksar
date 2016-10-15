@@ -13,7 +13,6 @@
 #include "bigprime/bigprime.h"
 
 using namespace std;
-
 Client::Client(mpz_t seed_prime, gmp_randstate_t state, string name) {
 	this->client_name = name;
 	mpz_init(this->Pu_x);
@@ -21,6 +20,8 @@ Client::Client(mpz_t seed_prime, gmp_randstate_t state, string name) {
 	mpz_init(this->Prime);
 	mpz_init(this->alpha);
 	mpz_init(this->Se_kn);
+
+	this->size_p = mpz_sizeinbase(seed_prime,2);
 
 	make_alpha_Prime(seed_prime);
 	generate_private_key(this->Prime, this->alpha, state);
@@ -102,8 +103,20 @@ void Client::make_alpha_Prime(mpz_t seed_prime) {
 	mpz_init_set_str(c,"1",10);//arbitrary int c = 1;
 	mpz_init_set_str(s,"2",10);//arbitrary int s = 2;
 	mpz_init_set_str(i,"2",10);//arbitrary int i = 1;
-	mpz_mul(prime,seed_prime,s);//seed=seed_prime*2;
+	Bigprime seed (this->size_p);
+
+	// 2*q + 1 = p
+	// if p is not prime get new q
+	mpz_mul(prime,seed_prime,s);//prime=seed_prime*2;
 	mpz_add(prime,prime,c);//prime+=1;
+
+	while(!seed.test_if_prime(seed_prime)) {
+		//mpz_out_str(stdout,62,prime);cout<<endl;
+		//cout << "Not strong prime"<< endl;
+		seed.generate_prime();
+		mpz_mul(prime,seed.prime,s);//prime=seed_prime*2;
+		mpz_add(prime,prime,c);//prime+=1;
+	}
 	do {//while a^q = 1 mod p
 		mpz_add(i,i,c);//i++;
 		mpz_powm(test,i,seed_prime,prime);
@@ -111,6 +124,15 @@ void Client::make_alpha_Prime(mpz_t seed_prime) {
 
 	mpz_set(this->alpha,s);
 	mpz_set(this->Prime,prime);
+
+
+	int psize = mpz_sizeinbase(prime,2);
+	string path = static_cast<ostringstream*>(&(ostringstream() << "./primes/" << psize) )->str();
+	FILE* pfile;
+	pfile = fopen(path.c_str(),"w");
+	mpz_out_str(pfile,62,prime);
+	fclose(pfile);
+
 }
 
 

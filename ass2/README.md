@@ -56,7 +56,6 @@ or
 	$ apt-get install libgmp3-dev
 	$ apt-get install libcryptop++8 libcrypto++8-dbg libcryptop++-dev
 
-
 ## Compilation and running (installation)
 	$ g++ -lgmp -lcryptopp secom.cpp client.cpp bigprime/bigprime.cpp -o secom
 
@@ -74,8 +73,6 @@ The program will first produce 2048bit prime number, this is the most time consm
 Then the output with public information for DH Key exchange.
 
 Next the prompt for client1 is displayed, plaintext + ciphertext, then whetever client2 recieved ciphertext and decrypted text.
-
-
 
 # Sample output
 

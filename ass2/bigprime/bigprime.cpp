@@ -10,7 +10,7 @@
 #include "bigprime.h"
 
 using namespace std;
-
+int counting = 0;
 Bigprime::Bigprime(unsigned long int power) {
 	this->power = power;
 	mpz_init(this->prime);
@@ -24,6 +24,8 @@ Bigprime::Bigprime(unsigned long int power) {
 
 	generate_prime();
 }
+Bigprime::Bigprime() {}
+Bigprime::~Bigprime() {}
 
 void Bigprime::initialize_random() {
 	// sets the seed for random number as current time;
@@ -56,6 +58,7 @@ void Bigprime::generate_random(int i) {
 		mpz_t c;mpz_init(c);mpz_set_str(c,"1",10);
 		mpz_t odd_2;mpz_init(odd_2);mpz_set(odd_2,this->big_odd);
 		mpz_sub(odd_2,odd_2,c);
+
 		mpz_urandomm(random, this->state, odd_2);
 		mpz_set(this->big_rand,random);
 	}
@@ -66,9 +69,9 @@ void Bigprime::generate_prime() {
 	generate_random(1);//odd
 	mpz_t c;mpz_init(c);mpz_set_str(c,"1",10);
 	mpz_t odd_1;mpz_init(odd_1);mpz_set(odd_1,this->big_odd);
-	mpz_sub(odd_1,odd_1,c);
+	mpz_sub(odd_1,odd_1,c);//odd_1 = big_odd -1;
 	// fermats prime test 50 times
-	for (size_t i = 0; i < 50; i++) {
+	for (size_t i = 0; i < 25; i++) {
 		generate_random(0);//radnom < big_odd-2
 		// a^(p-1) mod p
 		mpz_powm(test,this->big_rand,odd_1,this->big_odd);
@@ -79,4 +82,25 @@ void Bigprime::generate_prime() {
 		}
 	}
   mpz_set(this->prime,this->big_odd);
+}
+
+bool Bigprime::test_if_prime(mpz_t prime) {
+	mpz_t c;mpz_init(c);mpz_set_str(c,"1",10);
+	mpz_t prime_1;mpz_init(prime_1);mpz_set(prime_1,prime);
+	mpz_sub(prime_1,prime_1,c);//prime-1
+
+	mpz_t random;mpz_init(random);
+	mpz_t test;mpz_init(test);
+	mpz_urandomb(random, this->state, this->power);
+
+	for (size_t i = 0; i < 25; i++) {
+		// a^(p-1) mod p
+		mpz_powm(test,random,prime_1,prime);
+
+		// is congruent to 1?
+		if (mpz_cmp(test,c)!=0) {
+			return false;
+		}
+	}
+	return true;
 }

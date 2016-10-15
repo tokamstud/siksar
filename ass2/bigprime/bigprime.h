@@ -10,10 +10,13 @@ public:
 	gmp_randstate_t state;
 
 	Bigprime(unsigned long int power);
+	Bigprime();
+	~Bigprime();
 	void initialize_random();
 	void generate_random(int i);
 	void generate_prime();
 	void set_new_prime();
+	bool test_if_prime(mpz_t prime);
 };
 
 #endif
