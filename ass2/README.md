@@ -11,7 +11,8 @@
 	|- client.cpp  // class file
 	|- client.h   // header file to be lined with secom.cpp
 	|- secom.cpp  // main file to compile
-
+	|
+	./primes // some primes in textform base62
 
 # Main folder
 

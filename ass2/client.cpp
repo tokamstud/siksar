@@ -124,15 +124,6 @@ void Client::make_alpha_Prime(mpz_t seed_prime) {
 
 	mpz_set(this->alpha,s);
 	mpz_set(this->Prime,prime);
-
-
-	int psize = mpz_sizeinbase(prime,2);
-	string path = static_cast<ostringstream*>(&(ostringstream() << "./primes/" << psize) )->str();
-	FILE* pfile;
-	pfile = fopen(path.c_str(),"w");
-	mpz_out_str(pfile,62,prime);
-	fclose(pfile);
-
 }
 
 

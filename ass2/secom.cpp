@@ -124,3 +124,12 @@ int main(int argc, char* argv[]) {
 
 	return 0;
 }
+
+void save_prime(mpz_t prime) {
+	int psize = mpz_sizeinbase(prime,2);
+	string path = static_cast<ostringstream*>(&(ostringstream() << "./primes/" << psize) )->str();
+	FILE* pfile;
+	pfile = fopen(path.c_str(),"w");
+	mpz_out_str(pfile,62,prime);
+	fclose(pfile);
+}
