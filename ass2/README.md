@@ -55,16 +55,18 @@ e.g.:
 or
 
 	$ apt-get install libgmp3-dev
-	$ apt-get install libcryptop++8 libcrypto++8-dbg libcryptop++-dev
+	$ apt-get install libcryptop++*
 
 ## Compilation and running (installation)
-	$ g++ -lgmp -lcryptopp secom.cpp client.cpp bigprime/bigprime.cpp -o secom
+	$ g++ secom.cpp client.cpp bigprime/bigprime.cpp -o secom -L/usr/lib/ -lgmp -lcryptopp
 
 	$ ./secom
 
 OR
 
-	$ ./run-secure.sh
+	 $ ./run-secure.sh
+
+running program requires one optional flag, that is the size of the prime number to be generated in bits, if no flag is used 1024 bit key will be used by default
 
 * to close the program send C^ (default)
 
